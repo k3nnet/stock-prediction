@@ -1,0 +1,19 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+
+.toolbar{
+    position:sticky;
+    position:-webkit-sticky;
+    top:0;
+    z-index: 10000;
+    cursor: default
+}
+.toolbar h1{
+    display: inline-block;
+    font: 400 20px/36px Google Sans,sans-serif;
+    color: rgb(0,0,0,.54);
+    letter-spacing: 0;
+    margin: 0;
+    vertical-align: top;
+    white-space: nowrap;
+}

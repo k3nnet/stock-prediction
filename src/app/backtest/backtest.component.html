@@ -1,0 +1,74 @@
+<mat-card>
+    <mat-card-header>
+      <mat-card-title><h1>Train Neural Network</h1></mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div fxLayout="row" fxLayout.md="row" fxLayout.sm="column" fxLayout.xs="column" fxLayoutAlign="center" fxLayoutGap="20px">
+        <div fxFlex>
+          <div fxLayout="column" fxLayoutAlign="center" fxLayoutGap="10px">
+          
+            <mat-form-field appearance="outline">
+              <mat-label>Ticker Symbol</mat-label>
+              <input matInput placeholder="example: MSFT" [(ngModel)]='input_ticker'>
+             
+            </mat-form-field>
+  
+            <mat-form-field appearance="outline">
+            
+              <input type="number" matInput placeholder="Training Dataset Size (%)" [(ngModel)]='input_trainingsize'>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Epochs</mat-label>
+              <input type="number" matInput placeholder="a number" [(ngModel)]='input_epochs'>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Learning Rate</mat-label>
+              <input type="number" matInput placeholder="typically range between 0.01 and 0.1" [(ngModel)]='input_learningrate'>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Hidden LSTM Layers</mat-label>
+              <input type="number" matInput placeholder="number of LSTM layers" [(ngModel)]='input_hiddenlayers'>
+            </mat-form-field>
+  
+            <div>
+              <div style="float:left">
+                <button mat-raised-button color="primary"
+                (click)="onClickTrainModel()"
+                [disabled]="demo_3_loadingdata || !demo_3_ready"
+                >
+                Begin Training Model
+                <mat-icon matTooltip="If disabled: need training data, explore the previous section to prepare training data">info</mat-icon>
+              </button>
+              </div>
+              <div style="float:left; padding:5px;" [hidden]="!demo_3_loadingdata">
+                <mat-spinner [diameter]="30" [hidden]="!demo_3_loadingdata"></mat-spinner>
+              </div>
+            </div>
+  
+          </div>
+        </div>
+      </div>
+  
+      <div [hidden]="!demo_3_div_display">
+        <mat-divider [inset]="true" style="margin-top:30px;margin-bottom:30px"></mat-divider>
+        <h2>Training Model</h2>
+        <p>Note: this browser must be active for the training to progress</p>
+  
+        <div fxLayout="column" fxLayoutAlign="center" fxLayoutGap="20px">
+          <div fxFlex class="mat-elevation-z6">
+            <mat-progress-bar  mode="determinate" value="{{demo_3_progressbar}}"></mat-progress-bar>
+          </div>
+  
+          <div fxFlex class="mat-elevation-z6">
+              <plotly-plot [data]="demo_3_graph.data" [layout]="demo_3_graph.layout" [useResizeHandler]="true" [style]="{width: '100%', height: '100%'}"></plotly-plot>
+          </div>
+  
+          <div fxFlex class="mat-elevation-z6">
+            <div [innerHTML]="demo_3_traininglog" style="overflow-x: scroll; overflow-y: scroll; height: 150px; padding:5px"></div>
+          </div>
+        </div>
+  
+      </div>
+  
+    </mat-card-content>
+  </mat-card>
