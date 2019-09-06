@@ -134,14 +134,7 @@ export class timeSeriesMain{
 
 
     
-    makePredictions(X,model){
 
-        //let X=inputs.slice(Math.floor(size/100 * inputs.length),inputs.length);
-        console.table(X);
-        const predictedResult=model.predict(tf.tensor2d(X,[X.legnth,X[0].length]).div(tf.scalar(10))).mul(10);
-        return Array.from(predictedResult);
-        
-    }
 
 
     
@@ -231,7 +224,8 @@ export class timeSeriesMain{
 
         let X=inputs.slice(0,Math.floor(trainingsize/100 *inputs.length));
         let Y=outputs.slice(0,Math.floor(trainingsize/100 * outputs.length));
-
+        console.log(X);
+        console.log(X.length+" "+X[0].length)
         const xs=tf.tensor2d(X,[X.length,X[0].length]).div(tf.scalar(10));
         const ys=tf.tensor2d(Y,[Y.length,1]).reshape([Y.length,1]).div(tf.scalar(10));
 
@@ -272,5 +266,15 @@ export class timeSeriesMain{
     // const hist = {};
 
     return { model: model, stats: hist };
+    }
+    makePredictions(X,model){
+
+        //let X=this.inputs.slice(Math.floor(size/100 * inputs.length),inputs.length);
+        console.table(X.length);
+        console.log(String(X[0]).length)
+        const predictedResults = model.predict(tf.tensor2d(X,[X.length,X[0].length]).div(tf.scalar(10))).mul(10);
+        console.log(predictedResults.dataSync());
+        return Array.from(predictedResults.dataSync());
+        
     }
 }

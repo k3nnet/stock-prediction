@@ -30,10 +30,14 @@ export class HomeComponent implements OnInit {
   graph = {data:[], layout:{}};
   training_graph={data:[], layout:{}};
   validate_graph={data:[],layout:{}};
+  predict_graph={data:[],layout:{}}
 
   training_loading:boolean;
+  predict_loadingdata:boolean;
+
   traininglog:string;
   training_div_display:boolean;
+  predict_div_display:boolean;
   view:string;
 
   validate_loading:boolean;
@@ -47,6 +51,7 @@ export class HomeComponent implements OnInit {
   training_ready=false;
   prediction_ready=false;
   validate_ready=false;
+  
 
   constructor(private httpClient:HttpClient){}
   ngOnInit(): void {
@@ -128,39 +133,30 @@ export class HomeComponent implements OnInit {
 
     async onClickValidate(){
       
+
+      //UI-controlls
       this.validate_loading=true;
       this.validate_div_display=true;
 
-      let inputsTemp=this.data_sma_vec.map((inp_f)=>{
-        return inp_f['set'];
-      });
+    
 
-      const inputs=new Array();
 
-      let inputsTemp2=inputsTemp.map((val)=>{
-              var prices=new Array();
-              
-              prices=val;
-              //console.log(val)
-        return prices.map((val)=>{
+      //use stock prices as input to neural network
+      let inputs = this.data_sma_vec.map(function(inp_f) {
+        let temp=[];
+        temp= inp_f['set']
+        return temp.map(function (val) { return val['price']; });
+       });
+       // let outputs = this.data_sma_vec.map(function(outp_f) { return outp_f['avg']; });
+       // let outps = outputs.slice(Math.floor(this.input_trainingsize / 100 * outputs.length), outputs.length);
+   
+       let pred_X = inputs.slice(Math.floor(this.input_trainingsize / 100 * inputs.length), inputs.length);
+  
+      
 
-             console.log(val)
-             inputs.push(val['price'])
-             return val;
+    
 
-        });
-
-      });
-
-     
-
-      console.table(inputs);
-      //let outputs=this.data_sma_vec.map((outp_f)=>{ return outp_f['avg'] })
-      //let outps=outputs.slice(Match.floor(this.input_trainingsize/100*outputs.length),outputs.length);
-
-      let pred_X=inputs.slice(Math.floor(this.input_trainingsize/100 *inputs.length),inputs.length);
-
-      console.table(pred_X);
+      console.log(pred_X);
       let pred_Y=await this.model.makePredictions(pred_X,this.trained_model['model']);
 
       
@@ -179,7 +175,7 @@ export class HomeComponent implements OnInit {
       let sma=this.data_sma_vec.map((sma)=>{return sma['avg']});
       let prices=this.stock_prices_raw.map(stock=>{return stock['price']});
       
-   
+      console.log(pred_Y);
       this.training_graph={
         data:[
           {x:timestamps_a,y:prices, name:"Actual Price"},
@@ -193,10 +189,63 @@ export class HomeComponent implements OnInit {
       window.dispatchEvent(new Event('resize'));
 
       this.validate_loading=false;
+      this.prediction_ready=true;
 
 
 
 
+    }
+    async onClickPredict() {
+      this.predict_loadingdata = true;
+      this.predict_div_display = true;
+  
+      let inputs = this.data_sma_vec.map(function(inp_f) {
+        let temp=[];
+        temp= inp_f['set']
+       return temp.map(function (val) { return val['price']; });
+      });
+      let pred_X = [inputs[inputs.length-1]];
+  
+      let pred_y = await this.model.makePredictions(pred_X, this.trained_model['model']);
+  
+      let timestamps_d = this.stock_prices_raw.map(function (val) {
+        return val['timestamp'];
+      }).splice((this.stock_prices_raw.length - this.input_windowsize), this.stock_prices_raw.length);
+  
+      // date
+      let last_date = new Date(timestamps_d[timestamps_d.length-1]);
+      let add_days = 1;
+      if(this.input_temporal_resolutions == 'Weekly'){
+        add_days = 7;
+      }
+      last_date.setDate(last_date.getDate() + add_days);
+      let next_date = await this.formatDate(last_date.toString());
+      let timestamps_e = [next_date];
+  
+      this.predict_graph = {
+          data: [
+            { x: timestamps_d, y: pred_X[0], name: "Latest Trends" },
+            { x: timestamps_e, y: pred_y, name: "Predicted Price" },
+          ],
+          layout: {height: 350, title: "Predict Results", autosize: true}
+      };
+      window.dispatchEvent(new Event('resize'));
+  
+      this.predict_loadingdata = false;
+ 
+    }
+  
+    formatDate(date) {
+
+      var d = new Date(date),
+          month = '' + (d.getMonth() + 1),
+          day = '' + d.getDate(),
+          year = d.getFullYear();
+  
+      if (month.length < 2) month = '0' + month;
+      if (day.length < 2) day = '0' + day;
+  
+      return [year, month, day].join('-');
     }
 
     trainModel()

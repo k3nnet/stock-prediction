@@ -93,13 +93,7 @@
 
           <div>
             <div style="float:left">
-              <button mat-raised-button color="primary"
-              (click)="onClickValidate()"
-              [disabled]="validate_loading || !validate_ready"
-              >
-              Validate Model
-              <mat-icon matTooltip="If disabled: don't have a model to perfom prediction, train model first">info</mat-icon>
-            </button>
+             
               <button mat-raised-button color="primary"
               (click)="onClickTrainModel()"
               [disabled]="training_loading || !training_ready"
@@ -107,12 +101,29 @@
               Begin Training Model
               <mat-icon matTooltip="If disabled: need training data, explore the previous section to prepare training data">info</mat-icon>
             </button>
+            <button mat-raised-button color="primary"
+            (click)="onClickValidate()"
+            [disabled]="validate_loading || !validate_ready"
+            >
+            Validate Model
+            <mat-icon matTooltip="If disabled: don't have a model to perfom prediction, train model first">info</mat-icon>
+          </button>
+            <button mat-raised-button color="primary"
+              (click)="onClickPredict()"
+              [disabled]="predict_loadingdata || !training_ready"
+              >
+              Make Prediction
+              <mat-icon matTooltip="If disabled: don’t have a model to perform prediction, train model first">info</mat-icon>
+            </button>
             </div>
             <div style="float:left; padding:5px;" [hidden]="!training_loading">
               <mat-spinner [diameter]="30" [hidden]="!training_loading"></mat-spinner>
             </div>
             <div style="float:left; padding:5px;" [hidden]="!validate_loading">
               <mat-spinner [diameter]="30" [hidden]="!validate_loading"></mat-spinner>
+            </div>
+            <div style="float:left; padding:5px;" [hidden]="!predict_loadingdata">
+              <mat-spinner [diameter]="30" [hidden]="!predict_loadingdata"></mat-spinner>
             </div>
           </div>
 
@@ -138,6 +149,15 @@
         <div fxFlex class="mat-elevation-z6">
           <div [innerHTML]="traininglog" style="overflow-x: scroll; overflow-y: scroll; height: 150px; padding:5px"></div>
         </div>
+      </div>
+
+    </div>
+    <div [hidden]="!predict_div_display">
+      <mat-divider [inset]="true" style="margin-top:30px;margin-bottom:30px"></mat-divider>
+      <h2>Predicted</h2>
+
+      <div class="mat-elevation-z6">
+        <plotly-plot class="mat-elevation-z6" [data]="predict_graph.data" [layout]="predict_graph.layout" [useResizeHandler]="true" [style]="{width: '100%', height: '100%'}"></plotly-plot>
       </div>
 
     </div>
