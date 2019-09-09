@@ -7,18 +7,22 @@
         <div fxFlex>
             <div fxLayout="column" fxLayoutAlign="center" fxLayoutGap="10px">
         
-              <mat-form-field appearance="outline">
-                <mat-label>Ticker Symbol</mat-label>
-                <input matInput placeholder="example: MSFT" [(ngModel)]='input_ticker'>
-               
+             
+              <mat-form-field>
+                <mat-label>choose stock</mat-label>
+                <mat-select [(ngModel)]='input_ticker' [(value)]="input_ticker" placeholder="Stock">
+                  <mat-option *ngFor="let stock of symbols" [value]="stock.symbol">
+                    {{stock.name}}
+                  </mat-option>
+                </mat-select>
               </mat-form-field>
         
         
               <mat-form-field appearance="outline">
                 <mat-label>Data Temporal Resolutions</mat-label>
-                <mat-select placeholder="Data Temporal Resolutions" [(ngModel)]='input_temporal_resolutions'>
-                  <mat-option value="Weekly">Weekly</mat-option>
-                  <mat-option value="Daily">Daily</mat-option>
+                <mat-select placeholder="Data Temporal Resolutions"  [(ngModel)]='input_temporal_resolutions'>
+                  <mat-option  *ngFor="let temporal_resolution of temporal_resolutions" [value]="temporal_resolution">{{temporal_resolution}}</mat-option>
+                  
                 </mat-select>
               </mat-form-field>
         

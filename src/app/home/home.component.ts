@@ -51,13 +51,23 @@ export class HomeComponent implements OnInit {
   training_ready=false;
   prediction_ready=false;
   validate_ready=false;
+  symbols:[];
+  temporal_resolutions:[string,string]
+  
   
 
   constructor(private httpClient:HttpClient){}
   ngOnInit(): void {
     this.model=new timeSeriesMain(this.httpClient);
     this.input_temporal_resolutions='Daily';
-    this.input_ticker='MSFT';
+    this.model.fetchSymbols().then(result=>{
+      this.symbols=result['data'].map(stock=>{
+        console.log(stock)
+        return stock;
+      });
+    })
+    this.temporal_resolutions=["Daily","Weekly"]
+   
     this.input_api_key='L1841CDIIMA577T3'
     this.view="live"
 
@@ -73,7 +83,7 @@ export class HomeComponent implements OnInit {
   }
     //get data
     async onClickFetchData(){
-
+      console.log(this.input_ticker);
       //let the UI know that we are fetching data 
       this.loadingdata=true;
 
@@ -128,6 +138,12 @@ export class HomeComponent implements OnInit {
      
   
     }
+
+    modelChanged(newObj) {
+      // do something with new value
+
+      console.log(newObj)
+  }
 
     //validate the model
 

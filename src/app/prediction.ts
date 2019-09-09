@@ -30,6 +30,37 @@ export class timeSeriesMain{
         
     }_
 
+
+
+    async fetchSymbols(){
+          // return a promise 
+          return new Promise((resolve,reject)=>{
+
+            let output={};
+            //remember to change the request to an api endpoint not local
+            let requesturl="http://192.168.43.225:5000/api/symbols";
+           // let requesturl=".../api/stocks.json"
+
+
+
+            //make a request to get the data
+
+            this.httpClient.get(requesturl).subscribe(data=>{
+
+                console.log("fetched data successful");
+                console.log(data);
+                output['data']=data;
+
+                resolve(output);
+                
+            },(error)=>{
+                output['success']=false;
+                output['error_message']=error;
+                reject(output);
+            })
+        })  
+    }
+
     //fetch data asynchronously 
     async fetchData(ticker:string,apikey:string,data_temporal_resolutions:string){
 
@@ -56,10 +87,10 @@ export class timeSeriesMain{
             this.httpClient.get(requesturl).subscribe(data=>{
 
                 console.log("fetched data successful");
-                console.table(data);
+                console.log(data);
 
                 let daily=[];
-
+                console.log(data_temporal_resolutions)
                 //check the temporal resolution,make sure if'ts daily data ,weekly,monthly or yearly time series data
                 if(data_temporal_resolutions=='Daily'){
                     daily=data['Time Series (Daily)'];
