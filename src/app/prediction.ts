@@ -71,14 +71,14 @@ export class timeSeriesMain{
             let output={};
             let requesturl="";
 
-
+            console.log("temporal resolution: "+ data_temporal_resolutions +" "+ticker);
             //depending on the temporal resolution assign the request url is sit
             
             if(data_temporal_resolutions=='Daily'){
 
                 requesturl="https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol="+ticker+"&interval=5min&apikey="+apikey+"&outputsize=full";
             }else{
-                requesturl="https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol="+ticker+"&interval=5min&apikey="+apikey;
+                requesturl="https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol="+ticker+"&apikey="+apikey;
             }
 
 
@@ -87,23 +87,26 @@ export class timeSeriesMain{
             this.httpClient.get(requesturl).subscribe(data=>{
 
                 console.log("fetched data successful");
-                console.log(data);
+                console.table(data);
 
                 let daily=[];
+                let weekly=[];
                 console.log(data_temporal_resolutions)
                 //check the temporal resolution,make sure if'ts daily data ,weekly,monthly or yearly time series data
                 if(data_temporal_resolutions=='Daily'){
                     daily=data['Time Series (Daily)'];
 
                 }else{
-                    daily=data['Weeky Time Series'];
+                    console.log("weelky time ")
+                    weekly=data['Weekly Time Series'];
 
                     
                 }
 
-                console.table(daily);
+                console.log(daily.length);
+                console.log(weekly.length)
                 //get dialy data .
-                if(daily){
+                if(daily.length>1){
 
                     //hold reference to the stock symbol and how fresh is the data
                     let symbol=data['Meta Data']['2. Symbol'];
@@ -148,7 +151,53 @@ export class timeSeriesMain{
                     output['stock_prices_raw']=stock_prices_raw;
                     output['success']=true;
 
-                }else{
+                }else if(weekly.length>1){
+                     //hold reference to the stock symbol and how fresh is the data
+                     console.log("Weekly")
+                     let symbol=data['Meta Data']['2. Symbol'];
+                     let last_refreshed=data['Meta Data']['3. Last Refreshed'];
+ 
+                     let stock_prices_raw=[];
+ 
+                     for(let date in weekly){
+                         console.log(date)
+                         let closing_stockPrice={
+                             timestamp:date,
+                             price:parseInt(weekly[date]['4. close'])
+                         }
+                         stock_prices_raw.push(closing_stockPrice)
+                     }
+ 
+                     //sort the list of stock prices
+                     stock_prices_raw.reverse();
+ 
+                     let message="Symbol :"+symbol+" (last refreshed"+last_refreshed+")";
+ 
+ 
+                     output['linegraph_title']=message;
+ 
+                     //from a list of stock prices create a list of timestamp and prices respectively
+                     if(stock_prices_raw.length>0){
+                         let timestamps=stock_prices_raw.map((stock_price)=>{
+                             return stock_price['timestamp'];
+ 
+                         });
+                         let prices=stock_prices_raw.map((stock_price)=>{
+                             return stock_price['price'];
+                         });
+ 
+                         //include the two list to our output object
+                         output['timestamps']=timestamps;
+                         output['prices']=prices;
+ 
+                     }
+ 
+                     //don't forget to add the stock price raw data and it's results list to the output object
+                     output['stock_prices_raw']=stock_prices_raw;
+                     output['success']=true;
+
+                }
+                else{
                     output['success']=false;
                     output['error_message']=data['Information'];
                 }
