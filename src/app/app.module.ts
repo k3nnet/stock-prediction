@@ -5,10 +5,12 @@ import { HttpClientModule } from '@angular/common/http';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { PlotlyViaWindowModule } from 'angular-plotly.js';
 import { RouterModule } from '@angular/router'
-
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastrModule } from 'ngx-toastr';
+import {ToastrService} from 'ngx-toastr'
 
 // material
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 import {
   MatAutocompleteModule,
   MatBadgeModule,
@@ -76,6 +78,8 @@ export const appRoutes: Routes = [
     HttpClientModule,
     FormsModule,
     BrowserAnimationsModule,
+    ToastrModule.forRoot(), // ToastrModule added
+ 
     ReactiveFormsModule, MatAutocompleteModule,
     MatBadgeModule,
     MatBottomSheetModule,
@@ -118,4 +122,7 @@ export const appRoutes: Routes = [
   providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+
+  constructor(private toastr: ToastrService){}
+ }

@@ -1,6 +1,6 @@
 import * as tf  from '@tensorflow/tfjs';
 import {HttpClient} from '@angular/common/http'
-
+import { ToastrService } from 'ngx-toastr';
 export class timeSeriesMain{
 
 
@@ -13,7 +13,7 @@ export class timeSeriesMain{
     window_size:number;
     training_size:number;
     data_temporal_resolutions:string;
-
+    toast:ToastrService;
 
     
     constructor(private httpClient:HttpClient){
@@ -38,7 +38,7 @@ export class timeSeriesMain{
 
             let output={};
             //remember to change the request to an api endpoint not local
-            let requesturl="http://192.168.43.225:5000/api/symbols";
+            let requesturl="http://localhost:5000/api/symbols";
            // let requesturl=".../api/stocks.json"
 
 
@@ -59,6 +59,104 @@ export class timeSeriesMain{
                 reject(output);
             })
         })  
+    }
+
+
+    getWeekly(data,output){
+        //hold reference to the stock symbol and how fresh is the data
+        console.log("Weekly")
+        let symbol=data['Meta Data']['2. Symbol'];
+        let last_refreshed=data['Meta Data']['3. Last Refreshed'];
+        let weekly=data['Weekly Time Series'];
+
+        let stock_prices_raw=[];
+
+        for(let date in weekly){
+            console.log(date)
+            let closing_stockPrice={
+                timestamp:date,
+                price:parseInt(weekly[date]['4. close'])
+            }
+            stock_prices_raw.push(closing_stockPrice)
+        }
+
+        //sort the list of stock prices
+        stock_prices_raw.reverse();
+
+        let message="Symbol :"+symbol+" (last refreshed"+last_refreshed+")";
+
+
+        output['linegraph_title']=message;
+
+        //from a list of stock prices create a list of timestamp and prices respectively
+        if(stock_prices_raw.length>0){
+            let timestamps=stock_prices_raw.map((stock_price)=>{
+                return stock_price['timestamp'];
+
+            });
+            let prices=stock_prices_raw.map((stock_price)=>{
+                return stock_price['price'];
+            });
+
+            //include the two list to our output object
+            output['timestamps']=timestamps;
+            output['prices']=prices;
+
+        }
+
+        //don't forget to add the stock price raw data and it's results list to the output object
+        output['stock_prices_raw']=stock_prices_raw;
+        output['success']=true;
+        return output;
+    }
+
+    getDaily(data,output){
+//hold reference to the stock symbol and how fresh is the data
+let symbol=data['Meta Data']['2. Symbol'];
+let last_refreshed=data['Meta Data']['3. Last Refreshed'];
+let daily=data['Time Series (Daily)'];
+console.log(daily.length);
+
+let stock_prices_raw=[];
+
+for(let date in daily){
+    //console.log(date)
+    let closing_stockPrice={
+        timestamp:date,
+        price:parseInt(daily[date]['4. close'])
+    }
+    stock_prices_raw.push(closing_stockPrice)
+}
+
+//sort the list of stock prices
+stock_prices_raw.reverse();
+
+let message="Symbol :"+symbol+" (last refreshed"+last_refreshed+")";
+
+
+output['linegraph_title']=message;
+
+//from a list of stock prices create a list of timestamp and prices respectively
+if(stock_prices_raw.length>0){
+    let timestamps=stock_prices_raw.map((stock_price)=>{
+        return stock_price['timestamp'];
+
+    });
+    let prices=stock_prices_raw.map((stock_price)=>{
+        return stock_price['price'];
+    });
+
+    //include the two list to our output object
+    output['timestamps']=timestamps;
+    output['prices']=prices;
+
+}
+
+//don't forget to add the stock price raw data and it's results list to the output object
+output['stock_prices_raw']=stock_prices_raw;
+output['success']=true;
+
+return output;
     }
 
     //fetch data asynchronously 
@@ -89,113 +187,18 @@ export class timeSeriesMain{
                 console.log("fetched data successful");
                 console.table(data);
 
-                let daily=[];
-                let weekly=[];
+                if(data['Error Message']){
+                    output['success']=false;
+                    output['error_message']="Unavailable "+data_temporal_resolutions+ " data for "+ticker;
+                   return reject(output)
+
+                }
                 console.log(data_temporal_resolutions)
                 //check the temporal resolution,make sure if'ts daily data ,weekly,monthly or yearly time series data
                 if(data_temporal_resolutions=='Daily'){
-                    daily=data['Time Series (Daily)'];
-
-                }else{
-                    console.log("weelky time ")
-                    weekly=data['Weekly Time Series'];
-
-                    
-                }
-
-                console.log(daily.length);
-                console.log(weekly.length)
-                //get dialy data .
-                if(daily.length>1){
-
-                    //hold reference to the stock symbol and how fresh is the data
-                    let symbol=data['Meta Data']['2. Symbol'];
-                    let last_refreshed=data['Meta Data']['3. Last Refreshed'];
-
-                    let stock_prices_raw=[];
-
-                    for(let date in daily){
-                        //console.log(date)
-                        let closing_stockPrice={
-                            timestamp:date,
-                            price:parseInt(daily[date]['4. close'])
-                        }
-                        stock_prices_raw.push(closing_stockPrice)
-                    }
-
-                    //sort the list of stock prices
-                    stock_prices_raw.reverse();
-
-                    let message="Symbol :"+symbol+" (last refreshed"+last_refreshed+")";
-
-
-                    output['linegraph_title']=message;
-
-                    //from a list of stock prices create a list of timestamp and prices respectively
-                    if(stock_prices_raw.length>0){
-                        let timestamps=stock_prices_raw.map((stock_price)=>{
-                            return stock_price['timestamp'];
-
-                        });
-                        let prices=stock_prices_raw.map((stock_price)=>{
-                            return stock_price['price'];
-                        });
-
-                        //include the two list to our output object
-                        output['timestamps']=timestamps;
-                        output['prices']=prices;
-
-                    }
-
-                    //don't forget to add the stock price raw data and it's results list to the output object
-                    output['stock_prices_raw']=stock_prices_raw;
-                    output['success']=true;
-
-                }else if(weekly.length>1){
-                     //hold reference to the stock symbol and how fresh is the data
-                     console.log("Weekly")
-                     let symbol=data['Meta Data']['2. Symbol'];
-                     let last_refreshed=data['Meta Data']['3. Last Refreshed'];
- 
-                     let stock_prices_raw=[];
- 
-                     for(let date in weekly){
-                         console.log(date)
-                         let closing_stockPrice={
-                             timestamp:date,
-                             price:parseInt(weekly[date]['4. close'])
-                         }
-                         stock_prices_raw.push(closing_stockPrice)
-                     }
- 
-                     //sort the list of stock prices
-                     stock_prices_raw.reverse();
- 
-                     let message="Symbol :"+symbol+" (last refreshed"+last_refreshed+")";
- 
- 
-                     output['linegraph_title']=message;
- 
-                     //from a list of stock prices create a list of timestamp and prices respectively
-                     if(stock_prices_raw.length>0){
-                         let timestamps=stock_prices_raw.map((stock_price)=>{
-                             return stock_price['timestamp'];
- 
-                         });
-                         let prices=stock_prices_raw.map((stock_price)=>{
-                             return stock_price['price'];
-                         });
- 
-                         //include the two list to our output object
-                         output['timestamps']=timestamps;
-                         output['prices']=prices;
- 
-                     }
- 
-                     //don't forget to add the stock price raw data and it's results list to the output object
-                     output['stock_prices_raw']=stock_prices_raw;
-                     output['success']=true;
-
+                   output=this.getDaily(data,output);
+                }else if(data_temporal_resolutions=='Weekly'){
+                   output=this.getWeekly(data,output);
                 }
                 else{
                     output['success']=false;
