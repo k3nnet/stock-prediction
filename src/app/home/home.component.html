@@ -35,10 +35,7 @@
               <button mat-raised-button color="primary" (click)="onClickFetchData()" [disabled]="loadingdata">Fetch
                 Data</button>
             </div>
-            <div style="float:right;margin:20px">
-              <button mat-raised-button color="primary" (click)="onClickDisplaySMA()" [disabled]="!sma_ready">compute
-                SMA</button>
-            </div>
+           
             
             <div style="float:left; padding:5px;" *ngIf="loadingdata">
               <mat-spinner [diameter]="30" *ngIf="loadingdata"></mat-spinner>
@@ -53,11 +50,15 @@
         <div class="mat-elevation-z6">
           <plotly-plot class="mat-elevation-z6" [data]="graph.data" [layout]="graph.layout" [useResizeHandler]="true" [style]="{width: '100%', height: '100%'}"></plotly-plot>
         </div>
+       
         <div style="float:right;margin:20px">
           <button mat-raised-button color="primary" (click)="trainModel()" [disabled]="!training_ready">Train Model
             </button>
         </div>
-       
+        <div style="float:right;margin:20px">
+          <button mat-raised-button color="primary" (click)="onClickDisplaySMA()" [disabled]="!sma_ready">compute
+            SMA</button>
+        </div>
       </div>
    
 </mat-card>
@@ -72,12 +73,12 @@
         
           <mat-form-field appearance="outline">
             <mat-label>Ticker Symbol</mat-label>
-            <input matInput placeholder="example: MSFT" [(ngModel)]='input_ticker'>
+            <input matInput placeholder="example: MSFT" [(ngModel)]="input_ticker['symbol']">
            
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-          
+            <mat-label>Training Dataset Size (%)</mat-label>
             <input type="number" matInput placeholder="Training Dataset Size (%)" [(ngModel)]='input_trainingsize'>
           </mat-form-field>
           <mat-form-field appearance="outline">
@@ -94,39 +95,20 @@
           </mat-form-field>
 
           <div>
-            <div style="float:left">
+            <div style="float:right">
              
               <button mat-raised-button color="primary"
               (click)="onClickTrainModel()"
-              [disabled]="training_loading || training_ready"
+              [disabled]="training_loading || !training_ready"
               >
               Begin Training Model
               <mat-icon matTooltip="If disabled: need training data, explore the previous section to prepare training data">info</mat-icon>
-            </button>
-            <button mat-raised-button color="primary"
-            (click)="onClickValidate()"
-            [disabled]="validate_loading || validate_ready"
-            >
-            Validate Model
-            <mat-icon matTooltip="If disabled: don't have a model to perfom prediction, train model first">info</mat-icon>
-          </button>
-            <button mat-raised-button color="primary"
-              (click)="onClickPredict()"
-              [disabled]="predict_loadingdata || training_ready"
-              >
-              Make Prediction
-              <mat-icon matTooltip="If disabled: don’t have a model to perform prediction, train model first">info</mat-icon>
             </button>
             </div>
             <div style="float:left; padding:5px;" *ngIf="training_loading">
               <mat-spinner [diameter]="30" *ngIf="training_loading"></mat-spinner>
             </div>
-            <div style="float:left; padding:5px;" *ngIf="validate_loading">
-              <mat-spinner [diameter]="30" *ngIf="validate_loading"></mat-spinner>
-            </div>
-            <div style="float:left; padding:5px;" *ngIf="predict_loadingdata">
-              <mat-spinner [diameter]="30" *ngIf="predict_loadingdata"></mat-spinner>
-            </div>
+           
           </div>
 
         </div>
@@ -140,18 +122,47 @@
       <p>Note: this browser must be active for the training to progress</p>
 
       <div fxLayout="column" fxLayoutAlign="center" fxLayoutGap="20px">
+          <div fxFlex class="mat-elevation-z6">
+              <div [innerHTML]="traininglog" style="overflow-x: scroll; overflow-y: scroll; height: 150px; padding:5px"></div>
+            </div>
+
         <div fxFlex class="mat-elevation-z6">
           <mat-progress-bar  mode="determinate" value="{{training_progressbar}}"></mat-progress-bar>
         </div>
 
         <div fxFlex class="mat-elevation-z6">
             <plotly-plot [data]="training_graph.data" [layout]="training_graph.layout" [useResizeHandler]="true" [style]="{width: '100%', height: '100%'}"></plotly-plot>
+          
         </div>
+        <div style="float:right">
+             
+            <button mat-raised-button color="primary"
+            (click)="onClickValidate()"
+            [disabled]="validate_loading || !validate_ready"
+            >
+            Validate Model
+            <mat-icon matTooltip="If disabled: don't have a model to perfom prediction, train model first">info</mat-icon>
+          </button>
+            <button mat-raised-button color="primary"
+              (click)="onClickPredict()"
+              [disabled]="predict_loadingdata || !prediction_ready"
+              >
+              Make Prediction
+              <mat-icon matTooltip="If disabled: don’t have a model to perform prediction, train model first">info</mat-icon>
+            </button>
+            </div>
+            <div style="float:left; padding:5px;" *ngIf="validate_loading">
+                <mat-spinner [diameter]="30" *ngIf="validate_loading"></mat-spinner>
+              </div>
+              <div style="float:left; padding:5px;" *ngIf="predict_loadingdata">
+                  <mat-spinner [diameter]="30" *ngIf="predict_loadingdata"></mat-spinner>
+                </div>
 
-        <div fxFlex class="mat-elevation-z6">
-          <div [innerHTML]="traininglog" style="overflow-x: scroll; overflow-y: scroll; height: 150px; padding:5px"></div>
-        </div>
+       
       </div>
+     
+     
+     
 
     </div>
     <div *ngIf="predict_div_display">

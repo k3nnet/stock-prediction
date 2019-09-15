@@ -35,6 +35,7 @@ export class HomeComponent  {
 
   training_loading: boolean;
   predict_loadingdata: boolean;
+  predict_ready:boolean;
 
   traininglog: string;
   training_div_display=false;

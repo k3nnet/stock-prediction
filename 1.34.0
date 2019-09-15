@@ -1,0 +1,7 @@
++ @angular/core@8.2.1
++ @angular/cdk@8.1.2
++ plotly.js@1.49.4
++ @tensorflow/tfjs-core@1.2.7
+added 439 packages from 234 contributors, updated 3 packages and audited 22624 packages in 376.927s
+found 8 moderate severity vulnerabilities
+  run `npm audit fix` to fix them, or `npm audit` for details
