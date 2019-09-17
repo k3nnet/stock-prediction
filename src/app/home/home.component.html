@@ -5,16 +5,18 @@
         </mat-card-header>
         <mat-card-content>
             <div fxFlex>
+                <mat-progress-bar *ngIf="loading_symbols" mode="query"></mat-progress-bar>
                 <div fxLayout="column" fxLayoutAlign="center" fxLayoutGap="10px">
             
                 
                   <mat-form-field  appearance="outline">
-                    <mat-label>choose stock</mat-label>
-                    <mat-select  [(ngModel)]='input_ticker' [(value)]="input_ticker" placeholder="Stock">
-                      <mat-option *ngFor="let stock of symbols" [value]="stock">
+                    <mat-label>search stock</mat-label>
+                    <input type="text"  [(ngModel)]='input_ticker' (ngModelChange)="fetch(input_ticker)" [matAutocomplete]="auto" matInput [formControl]="myControl">
+                    <mat-autocomplete #auto="matAutocomplete">
+                      <mat-option *ngFor="let stock of symbols" [value]="stock.symbol">
                         {{stock.name}}
                       </mat-option>
-                    </mat-select>
+                    </mat-autocomplete>
                   </mat-form-field>
             
             
@@ -73,7 +75,7 @@
         
           <mat-form-field appearance="outline">
             <mat-label>Ticker Symbol</mat-label>
-            <input matInput placeholder="example: MSFT" [(ngModel)]="input_ticker['symbol']">
+            <input matInput placeholder="example: MSFT" [(ngModel)]="input_ticker">
            
           </mat-form-field>
 

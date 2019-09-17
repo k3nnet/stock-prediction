@@ -32,13 +32,13 @@ export class timeSeriesMain{
 
 
 
-    async fetchSymbols(){
+    async fetchSymbols(symbol){
           // return a promise 
           return new Promise((resolve,reject)=>{
 
             let output={};
             //remember to change the request to an api endpoint not local
-            let requesturl="http://localhost:5000/api/symbols";
+            let requesturl="https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords="+symbol+"&apikey=L1841CDIIMA577T3";
            // let requesturl=".../api/stocks.json"
 
 
@@ -49,7 +49,7 @@ export class timeSeriesMain{
 
                 console.log("fetched data successful");
                 console.log(data);
-                output['data']=data;
+                output['data']=data['bestMatches'];
 
                 resolve(output);
                 
@@ -170,7 +170,7 @@ return output;
             let requesturl="";
 
             console.log("temporal resolution: "+ data_temporal_resolutions +" "+ticker);
-            //depending on the temporal resolution assign the request url is sit
+            //depending on the temporal resolution assign the request url
             
             if(data_temporal_resolutions=='Daily'){
 
@@ -185,13 +185,17 @@ return output;
             this.httpClient.get(requesturl).subscribe(data=>{
 
                 console.log("fetched data successful");
-                console.table(data);
+                console.table(data['Note']);
 
                 if(data['Error Message']){
                     output['success']=false;
                     output['error_message']="Unavailable "+data_temporal_resolutions+ " data for "+ticker;
                    return reject(output)
 
+                }else if (data['Note']){
+                    output['success']=false;
+                    output['error_message']=data['Note']
+                    return reject(output)
                 }
                 console.log(data_temporal_resolutions)
                 //check the temporal resolution,make sure if'ts daily data ,weekly,monthly or yearly time series data

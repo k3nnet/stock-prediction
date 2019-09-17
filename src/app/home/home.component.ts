@@ -2,19 +2,23 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { timeSeriesMain } from '../prediction';
 import { ToastrService } from 'ngx-toastr';
+import { FormControl } from '@angular/forms';
+import {Observable} from 'rxjs';
+import {map, startWith} from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent  {
+export class HomeComponent implements OnInit {
+ 
 
   trained_model = {}
-
+  myControl = new FormControl();
   model: timeSeriesMain;
   input_temporal_resolutions: string;
-  input_ticker: any;
+  input_ticker:any;
   input_api_key: string;
   input_learningrate = 0.01;
   input_hiddenlayers = 4;
@@ -56,6 +60,8 @@ export class HomeComponent  {
   symbols: [];
   temporal_resolutions: [string, string];
   toastr:ToastrService;
+  loading_symbols:boolean
+  filteredOptions: Observable<string[]>;
 
 
 
@@ -64,13 +70,9 @@ export class HomeComponent  {
     this.toastr=toastr;
     this.view=false;
     this.input_temporal_resolutions = 'Daily';
-    this.model.fetchSymbols().then(result => {
-      this.symbols = result['data'].map(stock => {
-        console.log(stock)
-       
-        return stock;
-      });
-    })
+    this.loading_symbols=true
+   
+   
     this.temporal_resolutions = ["Daily", "Weekly"]
 
     this.input_api_key = 'L1841CDIIMA577T3'
@@ -85,7 +87,21 @@ export class HomeComponent  {
 
     console.log("home component")
   }
+
+  ngOnInit(): void {
+   
+  }
  
+
+  private _filter(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    let tickerNames:string[]=this.symbols.map((val)=>{return val['name']})
+
+    return tickerNames.filter(s => {
+      console.log(s);
+       s.includes(filterValue)
+    });
+  }
 
   errorMessage(message) {
 
@@ -101,6 +117,35 @@ export class HomeComponent  {
 
     return this.toastr;
   }
+
+  public async fetch(searchStr:String){
+    
+     
+    if(searchStr!=undefined && searchStr.length%2!=0){
+      console.log(searchStr.length)
+      await this.model.fetchSymbols(searchStr).then(result => {
+        this.symbols = result['data'].map(stock => {
+          console.log(stock)
+         
+          return {
+            symbol:stock['1. symbol'],
+            name:stock['2. name']
+          };
+        });
+        this.loading_symbols=false
+  
+  
+  
+    this.filteredOptions = this.myControl.valueChanges
+        .pipe(
+          startWith(''),
+          map(value => this._filter(value))
+        );
+      })
+    }
+   
+
+  }
   //get data
   async onClickFetchData() {
     console.log(this.input_ticker);
@@ -113,10 +158,11 @@ export class HomeComponent  {
     this.loadingdata = true;
     let result:any;
     //request data to be fetched . providing the stock symbol , api key for data provider and whether daily,weekly,monthly,or yearly temporal dat
-     await this.model.fetchData(this.input_ticker['symbol'], this.input_api_key, this.input_temporal_resolutions).then(results=>{
+     await this.model.fetchData(this.input_ticker, this.input_api_key, this.input_temporal_resolutions).then(results=>{
       result =results
      }).catch((error)=>{
-      this.errorMessage("Data unavailable for "+this.input_ticker['name'])
+       console.log(error)
+      this.errorMessage(error['error_message'])
       this.loadingdata=false;
       return
     })
@@ -338,7 +384,7 @@ export class HomeComponent  {
 
     let callback = function (epoch, log, model_params) {
 
-      this.traininglog = "<div> Epoch :" + (epoch + 1) + " (of " + this.input_epoch + ")" +
+      this.traininglog = "<div> Epoch :" + (epoch + 1) + " (of " +  model_params['input_epoch'] + ")" +
         ", loss:: " + log.loss + "</div>" + this.traininglog;
 
       epoch_loss.push(log.loss);
